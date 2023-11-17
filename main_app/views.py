@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
-from rest_framework import viewsets, permissions
-from .models import Owner, Vehicle, History, Mechanic, Company
-from .serializers import UserSerializer, GroupSerializer, OwnerSerializer, VehicleSerializer, HistorySerializer, MechanicSerializer, CompanySerializer
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from .models import *
+from .serializers import *
 
 # Create your views here.
 
