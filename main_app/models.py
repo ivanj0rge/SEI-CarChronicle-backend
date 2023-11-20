@@ -25,12 +25,19 @@ class Owner(models.Model):
         return f"{self.first_name} {self.last_name}"
     
 class Vehicle(models.Model):
+    FUEL_TYPES = [
+        ('p', 'Petrol'),
+        ('d', 'Diesel'),
+        ('h', 'Hybrid'),
+        ('e', 'Electric'),
+    ]
     registration = models.CharField(primary_key=True, max_length=8, unique=True)
     current_owner = models.ForeignKey('Owner', on_delete=models.CASCADE)
     color = models.CharField(max_length=50)
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
     year = models.IntegerField()
+    fuel = models.CharField(max_length=20, choices=FUEL_TYPES, default='Petrol')
     current_v5c_number = models.CharField(max_length=11, validators=[validate_v5c_number], unique=True)
     previous_owners_count = models.IntegerField(default=0)
     previous_owners = models.ManyToManyField('Owner', related_name='previous_owners', blank=True)
@@ -63,7 +70,7 @@ class History(models.Model):
 # Model for the mechanic
 class Mechanic(models.Model):
     mechanic_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=50)
     company = models.ForeignKey('Company', on_delete=models.CASCADE)
 
