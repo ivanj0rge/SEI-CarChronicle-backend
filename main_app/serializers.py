@@ -1,14 +1,16 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from .models import Owner, Vehicle, History, Mechanic, Company
+from .models import *
+from django.contrib.auth import get_user_model
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password', 'confirm_password', 'groups']
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'password', 'confirm_password', 'groups', 'first_name', 'last_name', 'profile_picture']
+        read_only_fields = ['id', 'username', 'email']
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -16,9 +18,16 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password', None)  # Remove confirm_password from validated_data
-        user = User.objects.create_user(**validated_data)
+        validated_data.pop('confirm_password', None)
+        user = CustomUser.objects.create_user(**validated_data)
         return user
+    
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.save()
+        return instance
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -31,10 +40,10 @@ class OwnerSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['owner_id', 'first_name', 'last_name', 'email']
 
 class VehicleSerializer(serializers.ModelSerializer):
-    current_owner = OwnerSerializer()
+    current_owner = UserSerializer()
     class Meta:
         model = Vehicle
-        fields = ['registration', 'current_owner', 'color', 'make', 'model', 'year', 'current_v5c_number', 'previous_owners_count', 'previous_owners']
+        fields = ['registration', 'current_owner', 'color', 'make', 'model', 'year', 'fuel', 'current_v5c_number', 'previous_owners_count', 'previous_owners']
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
