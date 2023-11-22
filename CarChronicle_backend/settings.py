@@ -33,18 +33,17 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     os.environ['ORIGIN_URL'],
-    
-# ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://127.0.0.1:",
+    "https://sei-carchronicle-backend-production.up.railway.app",
+    "https://sei-carchronicle-frontend-production.up.railway.app"
 ]
 
 ALLOWED_HOSTS = [
     'sei-carchronicle-backend-production.up.railway.app',
-    'sei-carchronicle-backend.railway.internal'
+    'sei-carchronicle-backend.railway.internal',
+    'localhost',
 ]
 
 CORS_ALLOW_ALL_HEADERS = True
