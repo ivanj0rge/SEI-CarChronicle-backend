@@ -28,25 +28,20 @@ class Owner(models.Model):
         return f"{self.first_name} {self.last_name}"
     
 class Vehicle(models.Model):
-    FUEL_TYPES = [
-        ('p', 'Petrol'),
-        ('d', 'Diesel'),
-        ('h', 'Hybrid'),
-        ('e', 'Electric'),
-    ]
-    registration = models.CharField(primary_key=True, max_length=8, unique=True)
+    registrationNumber = models.CharField(primary_key=True, max_length=8, unique=True)
     current_owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    color = models.CharField(max_length=50)
+    colour = models.CharField(max_length=50)
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
-    year = models.IntegerField()
-    fuel = models.CharField(max_length=20, choices=FUEL_TYPES, default='Petrol')
+    yearOfManufacture = models.IntegerField()
+    fuel_type = models.CharField(max_length=20, default='Petrol')
+    engineCapacity = models.IntegerField(default=0)
     current_v5c_number = models.CharField(max_length=11, validators=[validate_v5c_number], unique=True)
     previous_owners_count = models.IntegerField(default=0)
     previous_owners = models.ManyToManyField(get_user_model(), related_name='previous_owners', blank=True)
 
     def __str__(self):
-        return f"{self.registration} - {self.year} {self.make} ({self.model})"
+        return f"{self.registrationNumber} - {self.yearOfManufacture} {self.make} ({self.model})"
     
 # Model for the history
 SERVICE_TYPES = [

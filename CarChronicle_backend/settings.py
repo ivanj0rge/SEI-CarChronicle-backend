@@ -35,7 +35,7 @@ DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:",
+    "http://127.0.0.1:3000",
     "https://sei-carchronicle-backend-production.up.railway.app",
     "https://sei-carchronicle-frontend-production.up.railway.app",
 ]
@@ -79,10 +79,10 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'sei-carchronicle-backend.railway.internal',
-    'sei-carchronicle-backend-production.up.railway.app',
     'https://sei-carchronicle-backend-production.up.railway.app',
     'https://*.railway.app/'
+    # 'sei-carchronicle-backend.railway.internal/',
+    # 'sei-carchronicle-backend-production.up.railway.app/',
 ]
 
 ROOT_URLCONF = 'CarChronicle_backend.urls'

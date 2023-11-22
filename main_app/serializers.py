@@ -13,8 +13,10 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         read_only_fields = ['id', 'username', 'email']
 
     def validate(self, data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match.")
+        if 'password' in data and 'confirm_password' in data:
+            if data['password'] != data['confirm_password']:
+                raise serializers.ValidationError("Passwords do not match")
+
         return data
 
     def create(self, validated_data):
@@ -23,11 +25,13 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return user
     
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
-        instance.save()
-        return instance
+        request = self.context.get('request')
+        print(request.data)
+        
+        validated_data.pop('password', None)
+        validated_data.pop('password_confirm', None)
+
+        return super().update(instance, validated_data)
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -41,9 +45,27 @@ class OwnerSerializer(serializers.HyperlinkedModelSerializer):
 
 class VehicleSerializer(serializers.ModelSerializer):
     current_owner = UserSerializer()
+
     class Meta:
         model = Vehicle
-        fields = ['registration', 'current_owner', 'color', 'make', 'model', 'year', 'fuel', 'current_v5c_number', 'previous_owners_count', 'previous_owners']
+        fields = '__all__'
+
+    def validate_registrationNumber(self, value):
+        return value
+    
+class VehicleCreateUpdateSerializer(VehicleSerializer):
+    current_owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+
+    class Meta(VehicleSerializer.Meta):
+        exclude = ['current_owner']
+
+    def create(self, validated_data):
+        validated_data['current_owner'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop('current_owner', None)
+        return super().update(instance, validated_data)   
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:

@@ -44,6 +44,8 @@ urlpatterns = [
     path('create-user/', CreateUserView.as_view(), name='create-user'),
     path('users/me/', UserDetailView.as_view(), name='user-detail'),
     path('users/<int:pk>/update/', UpdateUserView.as_view(), name='update-user'),
+    path('proxy/', proxy_view, name='proxy'),
+    path('vehicles/<pk>/update/', UpdateVehicleView.as_view(), name='update-vehicle'),
 ]
 
 if settings.DEBUG:

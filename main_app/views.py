@@ -1,5 +1,9 @@
-from django.http import JsonResponse
 import requests
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.middleware.csrf import get_token
 from django.contrib.auth import get_user_model
@@ -9,7 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView
+from rest_framework.parsers import MultiPartParser
 from .models import *
 from .serializers import *
 import environ
@@ -53,6 +58,7 @@ class CreateUserView(generics.CreateAPIView):
         return Response(user_data, status=status.HTTP_201_CREATED)
     
 class UpdateUserView(UpdateAPIView):
+    parser_classes = [MultiPartParser]
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -60,12 +66,11 @@ class UpdateUserView(UpdateAPIView):
     def get_object(self):
         return self.request.user
 
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    def get_serializer(self, *args, **kwargs):
+        if 'partial' in kwargs:
+            kwargs['partial'] = True
+        return super().get_serializer(*args, **kwargs)
 
-    def perform_update(self, serializer):
-        serializer.save()
-    
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
@@ -78,7 +83,19 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
 class VehicleViewSet(viewsets.ModelViewSet):
     queryset = Vehicle.objects.all()
-    serializer_class = VehicleSerializer
+    serializer_class = VehicleCreateUpdateSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(current_owner=self.request.user)
+
+class UpdateVehicleView(RetrieveUpdateAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleCreateUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_update(self, serializer):
+        serializer.save(current_owner=self.request.user)
 
 class HistoryViewSet(viewsets.ModelViewSet):
     queryset = History.objects.all()
@@ -110,3 +127,22 @@ class LogoutView(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
+
+@csrf_exempt
+def proxy_view(request):
+    if request.method == 'POST':
+        url = 'https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles'
+
+        body = request.body
+        headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': 'Wld1wxKxVJ8De9lDFnjTK9dap9vz1Kr78Y1yDBtY',
+        }
+
+        response = requests.post(url, data=body, headers=headers)
+        data = response.json()
+
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'Invalid request method'})
+
