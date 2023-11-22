@@ -39,7 +39,12 @@ DEBUG = True
 # ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+]
+
+ALLOWED_HOSTS    = [
+    'sei-carchronicle-backend-production.up.railway.app',
+    'sei-carchronicle-backend.railway.internal'
 ]
 
 CORS_ALLOW_ALL_HEADERS = True
