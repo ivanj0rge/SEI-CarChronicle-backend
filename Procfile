@@ -1,0 +1,1 @@
+web: gunicorn 'CarChronicle_backend.wsgi'
