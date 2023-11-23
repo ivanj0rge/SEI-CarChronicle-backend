@@ -6,11 +6,10 @@ from django.contrib.auth import get_user_model
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'password', 'confirm_password', 'groups', 'first_name', 'last_name', 'profile_picture']
-        read_only_fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'email', 'password', 'confirm_password', 'groups', 'first_name', 'last_name']
+        read_only_fields = ['id']
 
     def validate(self, data):
         if 'password' in data and 'confirm_password' in data:
@@ -21,7 +20,14 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password', None)
-        user = CustomUser.objects.create_user(**validated_data)
+
+        first_name = validated_data.get('first_name', '')
+        last_name = validated_data.get('last_name', '')
+
+        user = CustomUser.objects.create_user(
+            first_name=first_name,
+            last_name=last_name,
+            **validated_data)
         return user
     
     def update(self, instance, validated_data):
@@ -37,14 +43,13 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
         fields = ['url', 'name']
-
-class OwnerSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Owner
-        fields = ['owner_id', 'first_name', 'last_name', 'email']
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta: 
+        model = User
+        fields = ['id', 'username', 'email', 'groups', 'first_name', 'last_name']
 
 class VehicleSerializer(serializers.ModelSerializer):
-    current_owner = UserSerializer()
+    current_owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Vehicle
@@ -52,36 +57,30 @@ class VehicleSerializer(serializers.ModelSerializer):
 
     def validate_registrationNumber(self, value):
         return value
-    
-class VehicleCreateUpdateSerializer(VehicleSerializer):
-    current_owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
-
-    class Meta(VehicleSerializer.Meta):
-        exclude = ['current_owner']
 
     def create(self, validated_data):
         validated_data['current_owner'] = self.context['request'].user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        validated_data.pop('current_owner', None)
-        return super().update(instance, validated_data)   
-
-class CompanySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = ['company_number', 'name', 'address']
-
-class MechanicSerializer(serializers.ModelSerializer):
-    company = CompanySerializer()
-    class Meta:
-        model = Mechanic
-        fields = ['mechanic_id', 'first_name', 'last_name', 'company']
+        if validated_data.get('current_owner') is None:
+            validated_data['current_owner'] = None
+        return super().update(instance, validated_data) 
 
 class HistorySerializer(serializers.ModelSerializer):
-    vehicle = VehicleSerializer()
-    mechanic = MechanicSerializer()
-    company = CompanySerializer()
+    vehicle_registration_number = serializers.CharField(write_only=True)
+    
     class Meta:
         model = History
-        fields = ['history_id', 'vehicle', 'date', 'mileage', 'service_type', 'description', 'mechanic', 'company']
+        fields = ['history_id', 'vehicle_registration_number', 'date', 'mileage', 'service_type', 'description']
+
+    def create(self, validated_data):
+        # Extract the registration number from validated data
+        vehicle_registration_number = validated_data.pop('vehicle_registration_number')
+
+        # Get the associated Vehicle object
+        vehicle = Vehicle.objects.get(registrationNumber=vehicle_registration_number)
+
+        # Create the history log with the associated vehicle
+        history = History.objects.create(vehicle=vehicle, **validated_data)
+        return history

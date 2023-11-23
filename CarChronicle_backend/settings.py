@@ -49,7 +49,6 @@ ALLOWED_HOSTS = [
 CORS_ALLOW_ALL_HEADERS = True
 CORS_ALLOW_CREDENTIALS = True
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -63,6 +62,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'main_app',
     'rest_framework',
+    'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist'
 ]
 
@@ -171,8 +171,13 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True
 }
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join("media")

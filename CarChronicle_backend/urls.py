@@ -25,12 +25,10 @@ from main_app.views import *
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
+
 router.register(r'groups', views.GroupViewSet)
-router.register(r'owners', views.OwnerViewSet)
 router.register(r'vehicles', views.VehicleViewSet)
 router.register(r'histories', views.HistoryViewSet)
-router.register(r'mechanics', views.MechanicViewSet)
-router.register(r'companies', views.CompanyViewSet)
 
 
 urlpatterns = [
@@ -45,8 +43,11 @@ urlpatterns = [
     path('users/me/', UserDetailView.as_view(), name='user-detail'),
     path('users/<int:pk>/update/', UpdateUserView.as_view(), name='update-user'),
     path('proxy/', proxy_view, name='proxy'),
-    path('vehicles/<pk>/update/', UpdateVehicleView.as_view(), name='update-vehicle'),
-]
+    path('vehicles/<str:pk>/', RemoveVehicleOwner.as_view(), name='remove-vehicle-owner'),
+    path('vehicles/<str:pk>/history/', HistoryListCreateView.as_view(), name='vehicle-history-list'),
+    path('history/<int:pk>/', HistoryRetrieveUpdateDestroyView.as_view(), name='history-detail'),
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
