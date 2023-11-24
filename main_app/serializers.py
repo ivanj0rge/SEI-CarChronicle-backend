@@ -7,7 +7,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
     class Meta:
-        model = CustomUser
+        model = User
         fields = ['id', 'username', 'email', 'password', 'confirm_password', 'groups', 'first_name', 'last_name']
         read_only_fields = ['id']
 
@@ -24,7 +24,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         first_name = validated_data.get('first_name', '')
         last_name = validated_data.get('last_name', '')
 
-        user = CustomUser.objects.create_user(
+        user = User.objects.create_user(
             first_name=first_name,
             last_name=last_name,
             **validated_data)
@@ -43,13 +43,12 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
         fields = ['url', 'name']
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta: 
-        model = User
-        fields = ['id', 'username', 'email', 'groups', 'first_name', 'last_name']
 
 class VehicleSerializer(serializers.ModelSerializer):
-    current_owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    current_owner = serializers.PrimaryKeyRelatedField(
+        read_only=False, 
+        queryset=User.objects.all(),
+        default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Vehicle
@@ -63,8 +62,9 @@ class VehicleSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        if validated_data.get('current_owner') is None:
-            validated_data['current_owner'] = None
+        if 'current_owner' in validated_data and validated_data['current_owner'] is None:
+            # Remove the current owner
+            validated_data.pop('current_owner', None)
         return super().update(instance, validated_data) 
 
 class HistorySerializer(serializers.ModelSerializer):

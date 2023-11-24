@@ -5,4 +5,3 @@ from .models import *
 
 admin.site.register(Vehicle)
 admin.site.register(History)
-admin.site.register(CustomUser)

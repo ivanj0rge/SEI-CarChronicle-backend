@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import Group, Permission, AbstractUser, AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import User, Group, Permission, AbstractUser
 
 
 # Define a validator for an 8-digit number
@@ -53,18 +53,3 @@ class History(models.Model):
     def __str__(self):
         return f"{self.service_type} on {self.date}"
     
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30, null=True, blank=True)
-    last_name = models.CharField(max_length=30, null=True, blank=True)
-    user_permissions = models.ManyToManyField(Permission, related_name='customuser_set', blank=True)
-    groups = models.ManyToManyField(Group, related_name='customuser_set', blank=True)
-
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.username

@@ -12,7 +12,7 @@ from rest_framework import viewsets, permissions, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.parsers import MultiPartParser
@@ -20,7 +20,6 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import *
 from .serializers import *
 import environ
-import os
 
 
 environ.Env()

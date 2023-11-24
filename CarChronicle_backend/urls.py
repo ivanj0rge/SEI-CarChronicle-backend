@@ -25,7 +25,6 @@ from main_app.views import *
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
-
 router.register(r'groups', views.GroupViewSet)
 router.register(r'vehicles', views.VehicleViewSet)
 router.register(r'histories', views.HistoryViewSet)
